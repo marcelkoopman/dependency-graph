@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
@@ -15,9 +16,16 @@ import static org.junit.Assert.assertEquals;
 public class NeoGraphFacadeTest {
 
     @Test
-    public void testBuild() throws IOException, XmlPullParserException {
+    public void testOneGraph() throws IOException, XmlPullParserException {
         final NeoGraphFacade facade = new NeoGraphFacade();
-        final JcQueryResult result = facade.createSinglePomGraph(new File("pom.xml"));
-        assertEquals(0, result.getDBErrors().size());
+        final JcQueryResult result = facade.createGraph(new File("pom.xml"));
+        assertEquals(result.getJsonResult().toString(), 0, result.getDBErrors().size());
+    }
+
+    @Test
+    public void testTwoGraphs() throws IOException, XmlPullParserException {
+        final NeoGraphFacade facade = new NeoGraphFacade();
+        final JcQueryResult result = facade.createGraphs(Arrays.asList(new File("pom.xml"), new File("pom2.xml")));
+        assertEquals(result.getJsonResult().toString(), 0, result.getDBErrors().size());
     }
 }

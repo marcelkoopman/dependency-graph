@@ -7,6 +7,9 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by marcel on 11-5-16.
@@ -17,11 +20,26 @@ public class NeoGraphFacade {
     private final MavenProjectBuilder builder = new MavenProjectBuilder();
     private final GraphBuilder graphBuilder = new GraphBuilder();
 
-    public JcQueryResult createSinglePomGraph(final File pomFile) throws IOException, XmlPullParserException {
+    public JcQueryResult createGraphs(final List<File> pomFiles) throws IOException, XmlPullParserException {
+        final Map<JcQueryResult, File> result = new HashMap<>();
+        final MavenProject[] models = new MavenProject[pomFiles.size()];
+        for (int i = 0; i < pomFiles.size(); ++i) {
+            final MavenProject model = builder.build(pomFiles.get(i));
+            models[i] = model;
+        }
+        final JcQuery query = graphBuilder.buildQuery(models);
+        return createNewGraph(query);
+    }
+
+    public JcQueryResult createGraph(final File pomFile) throws IOException, XmlPullParserException {
 
         final MavenProject model = builder.build(pomFile);
-        final JcQuery query = graphBuilder.build(model);
+        final JcQuery query = graphBuilder.buildQuery(model);
 
+        return createNewGraph(query);
+    }
+
+    private JcQueryResult createNewGraph(JcQuery query) {
         try {
             client.connect();
             client.clearDatabase();

@@ -5,7 +5,7 @@ import com.github.marcelkoopman.models.MavenProject;
 import com.google.common.base.CharMatcher;
 import iot.jcypher.query.JcQuery;
 import iot.jcypher.query.api.IClause;
-import iot.jcypher.query.factories.clause.CREATE;
+import iot.jcypher.query.factories.clause.MERGE;
 import iot.jcypher.query.values.JcNode;
 import iot.jcypher.query.writer.Format;
 import org.apache.log4j.Logger;
@@ -20,33 +20,12 @@ public class GraphBuilder {
 
     private static final Logger LOG = Logger.getLogger(GraphBuilder.class);
 
-    public JcQuery build(final MavenProject proj) {
+    public JcQuery buildQuery(final MavenProject... projects) {
         final JcQuery query = new JcQuery();
-
         final List<IClause> clauses = new ArrayList<>();
-
-        final JcNode n = new JcNode(getValidJcNodeName(proj.getName()));
-        clauses.add(
-                CREATE.node(n).label("project")
-                        .property("title").value(proj.getName())
-        );
-
-        for (MavenDependency dep : proj.getDependencies()) {
-            final JcNode depNode = new JcNode(getValidJcNodeName(dep.getName()));
-
-            clauses.add(
-                    CREATE.node(depNode).label("dependency")
-                            .property("title").value(dep.getName()).relation().in().type("DEPENDENCY").node(n)
-            );
-
-            final JcNode depVersionNode = new JcNode(getValidJcNodeName("version_" + dep.getVersion()));
-            clauses.add(
-                    CREATE.node(depVersionNode).label("version")
-                            .property("title").value(dep.getVersion()).relation().in().type("VERSION").node(depNode)
-            );
+        for (MavenProject project : projects) {
+            clauses.addAll(build(project));
         }
-
-
         final IClause[] clausesArr = new IClause[clauses.size()];
         query.setClauses(clauses.toArray(clausesArr));
 
@@ -54,6 +33,34 @@ public class GraphBuilder {
         LOG.info(cypher);
 
         return query;
+    }
+
+    private List<IClause> build(final MavenProject proj) {
+
+        final List<IClause> clauses = new ArrayList<>();
+
+        final JcNode mavenProjectNode = new JcNode(getValidJcNodeName(proj.getName()));
+        clauses.add(
+                MERGE.node(mavenProjectNode).label("project")
+                        .property("title").value(proj.getName())
+        );
+
+        for (MavenDependency dep : proj.getDependencies()) {
+            final JcNode depNode = new JcNode(getValidJcNodeName(dep.getName()));
+
+            clauses.add(
+                    MERGE.node(depNode).label("dependency")
+                            .property("title").value(dep.getName()).relation().in().type("DEPENDENCY").node(mavenProjectNode)
+            );
+
+            final JcNode depVersionNode = new JcNode(getValidJcNodeName("version_" + dep.getVersion()));
+            clauses.add(
+                    MERGE.node(depVersionNode).label("version")
+                            .property("title").value(dep.getVersion()).relation().in().type("VERSION").node(depNode)
+            );
+        }
+
+        return clauses;
     }
 
     private String getValidJcNodeName(final String name) {
