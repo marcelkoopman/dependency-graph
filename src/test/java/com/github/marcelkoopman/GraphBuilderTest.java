@@ -1,11 +1,12 @@
 package com.github.marcelkoopman;
 
 import com.github.marcelkoopman.models.MavenProject;
-import iot.jcypher.database.IDBAccess;
 import iot.jcypher.query.JcQueryResult;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 public class GraphBuilderTest {
 
     @Test
-    public void testBuild() {
+    public void testBuild() throws IOException, XmlPullParserException {
         NeoClient client = new NeoClient();
         GraphBuilder builder = new GraphBuilder();
         MavenProject model = builder.build(new File("pom.xml"));
