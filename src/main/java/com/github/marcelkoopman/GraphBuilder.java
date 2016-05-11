@@ -5,6 +5,7 @@ import com.github.marcelkoopman.models.MavenProject;
 import com.google.common.base.CharMatcher;
 import iot.jcypher.query.JcQuery;
 import iot.jcypher.query.api.IClause;
+import iot.jcypher.query.api.pattern.Node;
 import iot.jcypher.query.factories.clause.MERGE;
 import iot.jcypher.query.values.JcNode;
 import iot.jcypher.query.writer.Format;
@@ -40,9 +41,24 @@ public class GraphBuilder {
         final List<IClause> clauses = new ArrayList<>();
 
         final JcNode mavenProjectNode = new JcNode(getValidJcNodeName(proj.getName()));
+
+        final Node pomNode;
+        if (proj.getParent() == null) {
+            pomNode = MERGE.node(mavenProjectNode).label("project")
+                    .property("title").value(proj.getName());
+        } else {
+            final JcNode mavenParentProjectNode = new JcNode(getValidJcNodeName(proj.getParent()));
+            clauses.add(
+                    MERGE.node(mavenParentProjectNode).label("parent")
+                            .property("title").value(proj.getParent())
+            );
+            pomNode = MERGE.node(mavenProjectNode).label("project")
+                    .property("title").value(proj.getName())
+                    .relation().out().type("HAS_PARENT").node(mavenParentProjectNode);
+        }
+
         clauses.add(
-                MERGE.node(mavenProjectNode).label("project")
-                        .property("title").value(proj.getName())
+                pomNode
         );
 
         for (MavenDependency dep : proj.getDependencies()) {
@@ -50,13 +66,16 @@ public class GraphBuilder {
 
             clauses.add(
                     MERGE.node(depNode).label("dependency")
-                            .property("title").value(dep.getName()).relation().in().type("DEPENDENCY").node(mavenProjectNode)
+                            .property("title").value(dep.getName())
+                            .property("groupid").value(dep.getGroupId())
+                            .property("artifactid").value(dep.getArtifactId())
+                            .relation().in().type("HAS_DEPENDENCY").node(mavenProjectNode)
             );
 
             final JcNode depVersionNode = new JcNode(getValidJcNodeName("version_" + dep.getVersion()));
             clauses.add(
                     MERGE.node(depVersionNode).label("version")
-                            .property("title").value(dep.getVersion()).relation().in().type("VERSION").node(depNode)
+                            .property("title").value(dep.getVersion()).relation().in().type("WITH_VERSION").node(depNode)
             );
         }
 

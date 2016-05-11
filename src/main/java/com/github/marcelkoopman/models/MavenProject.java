@@ -11,7 +11,7 @@ public class MavenProject {
 
     private Set<MavenDependency> dependencies;
 
-    private String name;
+    private String name, parent, version, description;
 
     public Set<MavenDependency> getDependencies() {
         return dependencies;
@@ -27,6 +27,30 @@ public class MavenProject {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getParent() {
+        return parent;
+    }
+
+    public void setParent(String parent) {
+        this.parent = parent;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
 }

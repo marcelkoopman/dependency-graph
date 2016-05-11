@@ -4,6 +4,7 @@ import com.github.marcelkoopman.models.MavenDependency;
 import com.github.marcelkoopman.models.MavenProject;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import java.io.File;
@@ -34,10 +35,22 @@ public class MavenProjectBuilder {
             dependencies.add(mavenDep);
         }
 
-        final MavenProject proj = new MavenProject();
-        proj.setName(model.getName());
-        proj.setDependencies(dependencies);
-        return proj;
+        final MavenProject project = new MavenProject();
+        final String name;
+        if (model.getName() == null) {
+            name = "no_name";
+        } else {
+            name = model.getName();
+        }
+        project.setName(name);
+        project.setVersion(model.getVersion());
+        project.setDescription(model.getDescription());
+        project.setDependencies(dependencies);
+        final Parent parent = model.getParent();
+        if (parent != null) {
+            project.setParent(parent.getArtifactId());
+        }
+        return project;
     }
 
 }
