@@ -20,7 +20,7 @@ public class NeoClient {
     public IDBAccess connect() {
         final Properties props = new Properties();
         props.setProperty(DBProperties.SERVER_ROOT_URI, "http://localhost:7474");
-        props.setProperty(DBProperties.DATABASE_DIR, "neo4j.db");
+        props.setProperty(DBProperties.DATABASE_DIR, "E:\\projects\\neo\\db2");
 
         final String userId = "neo4j";
         final String passWord = "admin";

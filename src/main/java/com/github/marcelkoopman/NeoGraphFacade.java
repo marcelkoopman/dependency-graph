@@ -42,7 +42,7 @@ public class NeoGraphFacade {
     private JcQueryResult createNewGraph(JcQuery query) {
         try {
             client.connect();
-            client.clearDatabase();
+           // client.clearDatabase();
 
             final JcQueryResult result = client.executeQuery(query);
             return result;

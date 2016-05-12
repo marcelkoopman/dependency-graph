@@ -25,7 +25,7 @@ public class NeoGraphFacadeTest {
     @Test
     public void testTwoGraphs() throws IOException, XmlPullParserException {
         final NeoGraphFacade facade = new NeoGraphFacade();
-        final JcQueryResult result = facade.createGraphs(Arrays.asList(new File("pom.xml"), new File("pom2.xml")));
+        final JcQueryResult result = facade.createGraphs(Arrays.asList(new File("pom.xml"), new File("wgp.xml"), new File("wgpadmin.xml"), new File("giservices.xml")));
         assertEquals(result.getJsonResult().toString(), 0, result.getDBErrors().size());
     }
 }

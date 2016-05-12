@@ -40,14 +40,15 @@ public class GraphBuilder {
 
         final List<IClause> clauses = new ArrayList<>();
 
-        final JcNode mavenProjectNode = new JcNode(getValidJcNodeName(proj.getName()));
+        final JcNode mavenProjectNode = new JcNode("proj_"+getValidJcNodeName(proj.getName()));
 
         final Node pomNode;
         if (proj.getParent() == null) {
             pomNode = MERGE.node(mavenProjectNode).label("project")
                     .property("title").value(proj.getName());
         } else {
-            final JcNode mavenParentProjectNode = new JcNode(getValidJcNodeName(proj.getParent()));
+            final JcNode mavenParentProjectNode = new JcNode(getValidJcNodeName("parent_" + proj.getName() + proj.getParent()));
+
             clauses.add(
                     MERGE.node(mavenParentProjectNode).label("parent")
                             .property("title").value(proj.getParent())
@@ -62,20 +63,15 @@ public class GraphBuilder {
         );
 
         for (MavenDependency dep : proj.getDependencies()) {
-            final JcNode depNode = new JcNode(getValidJcNodeName(dep.getName()));
+            final JcNode depNode = new JcNode("dep_"+getValidJcNodeName(dep.getName()));
 
             clauses.add(
                     MERGE.node(depNode).label("dependency")
                             .property("title").value(dep.getName())
                             .property("groupid").value(dep.getGroupId())
                             .property("artifactid").value(dep.getArtifactId())
+                            .property("version").value(dep.getVersion())
                             .relation().in().type("HAS_DEPENDENCY").node(mavenProjectNode)
-            );
-
-            final JcNode depVersionNode = new JcNode(getValidJcNodeName("version_" + dep.getVersion()));
-            clauses.add(
-                    MERGE.node(depVersionNode).label("version")
-                            .property("title").value(dep.getVersion()).relation().in().type("WITH_VERSION").node(depNode)
             );
         }
 
@@ -87,7 +83,8 @@ public class GraphBuilder {
         if (name == null) {
             valid = "no_name";
         } else {
-            valid = CharMatcher.is('-').or(CharMatcher.is('.')).or(CharMatcher.is(' ')).replaceFrom(name, "_");
+            System.err.println(name);
+            valid = CharMatcher.is('-').or(CharMatcher.is('.')).or(CharMatcher.is(' ')).or(CharMatcher.is('$')).or(CharMatcher.is('{')).or(CharMatcher.is('}')).replaceFrom(name, "_");
         }
         return valid;
     }
