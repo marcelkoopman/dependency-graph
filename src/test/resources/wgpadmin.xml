@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>wgp-admin</artifactId>
+        <groupId>nl.tkp.wgp.wgpadmin</groupId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>wgp-admin-ear</artifactId>
+    <packaging>ear</packaging>
+    <name>WGP Admin Ear</name>
+
+
+    <build>
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-ear-plugin</artifactId>
+                <version>${maven-ear-plugin.version}</version>
+
+                <configuration>
+                    <version>5</version>
+                    <modules>
+                        <webModule>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>wgp-admin-war</artifactId>
+                            <contextRoot>/wgp-admin</contextRoot>
+                        </webModule>
+                    </modules>
+
+                    <generateApplicationXml>true</generateApplicationXml>
+                    <defaultLibBundleDir>lib</defaultLibBundleDir>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1.1</version>
+
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <inherited>false</inherited>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includePluginDependencies>true</includePluginDependencies>
+                    <mainClass>documentation.ReportMaker</mainClass>
+                    <arguments>
+                        <argument>${project.artifactId}</argument>
+                        <argument>${project.name}</argument>
+                        <argument>${project.description}</argument>
+                    </arguments>
+
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>nl.tkp.junitreporter</groupId>
+                        <artifactId>junitreporter</artifactId>
+                        <version>${junitreporter.version}</version>
+                        <type>jar</type>
+
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+
+
+        </plugins>
+
+
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wgp-admin-war</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>nl.tkp.wgp.gi-backend</groupId>
+            <artifactId>gi-persistence-ejb-jar</artifactId>
+            <version>${gi-backend.version}</version>
+            <type>ejb</type>
+        </dependency>
+        <dependency>
+            <groupId>nl.tkp.wgp.gi-backend</groupId>
+            <artifactId>gi-rpps-domain-ejb-jar</artifactId>
+            <version>${gi-backend.version}</version>
+            <type>ejb</type>
+        </dependency>
+
+
+    </dependencies>
+
+</project>
