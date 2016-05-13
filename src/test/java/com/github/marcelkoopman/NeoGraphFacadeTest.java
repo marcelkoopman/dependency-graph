@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -49,14 +50,23 @@ public class NeoGraphFacadeTest {
         assertEquals(10, files.size());
     }
 
-    @Ignore
+
     @Test
-    public void testTwoGraphs() throws IOException, XmlPullParserException {
+    public void testManyGraphs() throws IOException, XmlPullParserException {
         final NeoGraphFacade facade = new NeoGraphFacade();
 
-        final List<File> files = Arrays.asList(new File(RESOURCE_PATH + "csv.xml"), new File(RESOURCE_PATH + "wgp.xml"), new File(RESOURCE_PATH + "wgpadmin.xml"));
-        final JcQueryResult result = facade.createGraphs(files);
-        assertEquals(result.getJsonResult().toString(), 0, result.getDBErrors().size());
-        final Graph graph = result.getGraph();
+        final Collection<File> files = FileUtils.listFiles(new File("E:\\Dev\\git"), FileFilterUtils.nameFileFilter("pom.xml"), new IOFileFilter() {
+            @Override
+            public boolean accept(final File file) {
+                return true;
+            }
+
+            @Override
+            public boolean accept(final File file, final String s) {
+                return true;
+            }
+        });
+        //final List<File> files = Arrays.asList(new File(RESOURCE_PATH + "csv.xml"), new File(RESOURCE_PATH + "wgp.xml"), new File(RESOURCE_PATH + "wgpadmin.xml"));
+        facade.createGraphs(new ArrayList<>(files));
     }
 }

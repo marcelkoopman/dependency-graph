@@ -20,21 +20,23 @@ public class NeoGraphFacade {
     private final MavenProjectBuilder builder = new MavenProjectBuilder();
     private final GraphBuilder graphBuilder = new GraphBuilder();
 
-    public JcQueryResult createGraphs(final List<File> pomFiles) throws IOException, XmlPullParserException {
-        final Map<JcQueryResult, File> result = new HashMap<>();
+    public void createGraphs(final List<File> pomFiles) throws IOException, XmlPullParserException {
+
         final MavenProject[] models = new MavenProject[pomFiles.size()];
         for (int i = 0; i < pomFiles.size(); ++i) {
             final MavenProject model = builder.build(pomFiles.get(i));
             models[i] = model;
         }
-        final JcQuery query = graphBuilder.buildQuery(models);
-        return createNewGraph(query);
+        final Map<MavenProject, JcQuery> result = graphBuilder.buildQueryList(models);
+        result.forEach((mavenProject, jcQuery) ->
+                createNewGraph(jcQuery)
+        );
     }
 
     public JcQueryResult createGraph(final File pomFile) throws IOException, XmlPullParserException {
 
         final MavenProject model = builder.build(pomFile);
-        final JcQuery query = graphBuilder.buildQuery(model);
+        final JcQuery query = graphBuilder.buildOneQuery(model);
 
         return createNewGraph(query);
     }

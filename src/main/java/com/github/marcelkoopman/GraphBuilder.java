@@ -9,10 +9,17 @@ import iot.jcypher.query.api.pattern.Node;
 import iot.jcypher.query.factories.clause.MERGE;
 import iot.jcypher.query.values.JcNode;
 import iot.jcypher.query.writer.Format;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.CharSet;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 
+import java.io.File;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by marcel on 11-5-16.
@@ -21,7 +28,7 @@ public class GraphBuilder {
 
     private static final Logger LOG = Logger.getLogger(GraphBuilder.class);
 
-    public JcQuery buildQuery(final MavenProject... projects) {
+    public JcQuery buildOneQuery(final MavenProject... projects) {
         final JcQuery query = new JcQuery();
         final List<IClause> clauses = new ArrayList<>();
         for (MavenProject project : projects) {
@@ -31,23 +38,39 @@ public class GraphBuilder {
         query.setClauses(clauses.toArray(clausesArr));
 
         final String cypher = iot.jcypher.util.Util.toCypher(query, Format.PRETTY_3);
-        LOG.info(cypher);
+        try {
+            final File file = File.createTempFile("cypher", "txt");
+            FileUtils.writeStringToFile(file, cypher, "UTF-8");
+            LOG.info(""+file.getAbsolutePath());
+        } catch (Exception e) {
+            LOG.error(e);
+        }
+
 
         return query;
+    }
+
+    public Map<MavenProject, JcQuery> buildQueryList(final MavenProject... projects) {
+        final Map<MavenProject, JcQuery> queries = new HashMap<>();
+        for (MavenProject project : projects) {
+            final JcQuery query = buildOneQuery(project);
+            queries.put(project, query);
+        }
+        return queries;
     }
 
     private List<IClause> build(final MavenProject proj) {
 
         final List<IClause> clauses = new ArrayList<>();
 
-        final JcNode mavenProjectNode = new JcNode("proj_"+getValidJcNodeName(proj.getName()));
+        final JcNode mavenProjectNode = new JcNode("m"+getRandomString());
 
         final Node pomNode;
         if (proj.getParent() == null) {
             pomNode = MERGE.node(mavenProjectNode).label("project")
                     .property("title").value(proj.getName());
         } else {
-            final JcNode mavenParentProjectNode = new JcNode(getValidJcNodeName("parent_" + proj.getName() + proj.getParent()));
+            final JcNode mavenParentProjectNode = new JcNode("p"+getRandomString());
 
             clauses.add(
                     MERGE.node(mavenParentProjectNode).label("parent")
@@ -63,7 +86,7 @@ public class GraphBuilder {
         );
 
         for (MavenDependency dep : proj.getDependencies()) {
-            final JcNode depNode = new JcNode("dep_"+getValidJcNodeName(dep.getName()));
+            final JcNode depNode = new JcNode("d"+getRandomString());
 
             clauses.add(
                     MERGE.node(depNode).label("dependency")
@@ -78,15 +101,7 @@ public class GraphBuilder {
         return clauses;
     }
 
-    private String getValidJcNodeName(final String name) {
-        final String valid;
-        if (name == null) {
-            valid = "no_name";
-        } else {
-            System.err.println(name);
-            valid = CharMatcher.is('-').or(CharMatcher.is('.')).or(CharMatcher.is(' ')).or(CharMatcher.is('$')).or(CharMatcher.is('{')).or(CharMatcher.is('}')).replaceFrom(name, "_");
-        }
-        return valid;
+    private String getRandomString() {
+        return RandomStringUtils.randomAlphabetic(4);
     }
-
 }
